@@ -7,18 +7,24 @@ pool:
   vmImage: 'macOS-latest'
 
 steps:
-- script: |
-    echo "Available Xcode versions:"
-    ls /Applications | grep Xcode | sort -V
-    echo
-    xcode_version='Xcode_16.4.app'
-    echo "Using Xcode: $xcode_version"
-    sudo xcode-select -s "/Applications/$xcode_version"
-    xcodebuild -version
-  displayName: 'XCodebuild Version'
+  - checkout: self
+    fetchTags: false
+    clean: true
+    lfs: true
+    submodules: recursive
+    fetchDepth: 1
 
-- script: |
-    pod --version
-    xcodebuild -version
-  displayName: 'Check tools'
-  workingDirectory: $(Build.SourcesDirectory)/MiniappSDK/ios/BuildXCFramework
+  - script: |
+      echo "Available Xcode versions:"
+      ls /Applications | grep Xcode | sort -V
+      echo
+      xcode_version='Xcode_16.4.app'
+      echo "Using Xcode: $xcode_version"
+      sudo xcode-select -s "/Applications/$xcode_version"
+      xcodebuild -version
+    displayName: 'XCodebuild Version'
+
+  - script: |
+      pod --version
+      xcodebuild -version
+    displayName: 'Check tools'
