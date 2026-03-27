@@ -3,7 +3,10 @@
 # 2. 等待 2 分钟后结束
 # 3. Cancel job 用于取消之前的运行
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - '*'
 
 pr:
   branches:
