@@ -1,7 +1,7 @@
 # Staging Pipeline
 # 1. 由 main pipeline 完成后触发
 # 2. 使用 staging environment + Exclusive Lock
-# 3. 测试：一个 deployment job 获取 lock，两个并行 job 执行工作
+# 3. 测试：两个 stage，验证 lock 是 stage 级别
 
 trigger: none
 pr: none
@@ -20,7 +20,7 @@ pool:
 
 stages:
   - stage: StagingDeploy
-    displayName: 'Staging Deploy'
+    displayName: 'Stage 1 - Staging Deploy'
     jobs:
       # 获取 Exclusive Lock
       - deployment: AcquireLock
@@ -30,9 +30,8 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: Delay@1
-                  inputs:
-                    delayForMinutes: '0'
+                - checkout: none
+                - script: echo "Lock acquired"
 
       # 并行 Job A
       - job: JobA
@@ -57,3 +56,17 @@ stages:
               sleep 30
               echo "Job B finished: $(date)"
             displayName: 'Job B'
+
+  - stage: PostDeploy
+    displayName: 'Stage 2 - Post Deploy'
+    dependsOn: StagingDeploy
+    jobs:
+      - job: PostJob
+        displayName: 'Post Job - Wait 30s'
+        steps:
+          - checkout: none
+          - script: |
+              echo "Post deploy started: $(date)"
+              sleep 30
+              echo "Post deploy finished: $(date)"
+            displayName: 'Post Job'
