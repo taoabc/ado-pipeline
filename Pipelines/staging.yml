@@ -30,8 +30,9 @@ stages:
           runOnce:
             deploy:
               steps:
-                - checkout: none
-                - script: echo "Lock acquired"
+                - task: Delay@1
+                  inputs:
+                    delayForMinutes: '0'
 
       # 并行 Job A
       - job: JobA
