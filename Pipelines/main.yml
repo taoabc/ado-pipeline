@@ -14,51 +14,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 jobs:
-  # Job 1: 取消之前的运行
-  - job: CancelPreviousRuns
-    displayName: 'Cancel Previous Runs'
-    steps:
-      - checkout: none
-      
-      - script: |
-          echo "Checking for previous runs..."
-          
-          # 使用 Azure DevOps REST API 取消同一 PR 的之前运行
-          BUILD_ID=$(Build.BuildId)
-          PROJECT_URL=$(System.TeamFoundationCollectionUri)$(System.TeamProject)
-          
-          echo "Current Build ID: $BUILD_ID"
-          echo "Project URL: $PROJECT_URL"
-          
-          # 获取同一定义下正在运行的 builds
-          RUNNING_BUILDS=$(curl -s -u ":$SYSTEM_ACCESSTOKEN" \
-            "$PROJECT_URL/_apis/build/builds?definitions=$(System.DefinitionId)&statusFilter=inProgress&api-version=7.0" \
-            | jq -r '.value[] | select(.id != '$BUILD_ID') | .id')
-          
-          if [ -z "$RUNNING_BUILDS" ]; then
-            echo "No previous runs found to cancel."
-          else
-            echo "Found previous runs: $RUNNING_BUILDS"
-            
-            # 取消每个之前的运行
-            for RUN_ID in $RUNNING_BUILDS; do
-              echo "Cancelling build: $RUN_ID"
-              curl -s -X PATCH \
-                -u ":$SYSTEM_ACCESSTOKEN" \
-                -H "Content-Type: application/json" \
-                -d '{"status": "cancelling"}' \
-                "$PROJECT_URL/_apis/build/builds/$RUN_ID?api-version=7.0"
-              echo "Build $RUN_ID cancelled."
-            done
-          fi
-        displayName: 'Cancel Previous Runs'
-        env:
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  # Job 2: 等待 2 分钟
   - job: WaitJob
     displayName: 'Wait 2 Minutes'
-    dependsOn: CancelPreviousRuns
     steps:
       - checkout: none
       
