@@ -56,4 +56,3 @@ stages:
               sleep 30
               echo "Job B finished: $(date)"
             displayName: 'Job B'
-                  displayName: 'Wait 1 Minute'
