@@ -30,9 +30,9 @@ stages:
                 - checkout: none
                 - script: |
                     echo "Lock acquired: $(date)"
-                    sleep 30
+                    sleep 10
                     echo "Stage 1 done: $(date)"
-                  displayName: 'Work with Lock (30s)'
+                  displayName: 'Work with Lock (10s)'
 
   - stage: Stage2
     displayName: 'Stage 2 - No Lock'
