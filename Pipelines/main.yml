@@ -1,7 +1,7 @@
 # 测试用 Pipeline
 # 1. PR 提交时触发
-# 2. 两个 stage，验证 exclusive lock 是 stage 级别
-# 3. Stage 1 有 lock（30s），Stage 2 无 lock（30s）
+# 2. 单 stage，验证 exclusive lock 锁整个 pipeline
+# 3. Lock + 两个 Job 串行（各 30s）
 
 trigger:
   branches:
@@ -13,14 +13,12 @@ pr:
     include:
       - '*'
 
-lockBehavior: sequential
-
 pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-  - stage: Stage1
-    displayName: 'Stage 1 - With Lock'
+  - stage: Deploy
+    displayName: 'Deploy - With Lock'
     jobs:
       - deployment: AcquireLock
         displayName: 'Acquire Lock'
@@ -33,19 +31,15 @@ stages:
                 - script: |
                     echo "Lock acquired: $(date)"
                     sleep 10
-                    echo "Stage 1 done: $(date)"
-                  displayName: 'Work with Lock (10s)'
+                    echo "Step 1 done: $(date)"
+                  displayName: 'Step 1 (10s)'
 
-  - stage: Stage2
-    displayName: 'Stage 2 - No Lock'
-    dependsOn: Stage1
-    jobs:
       - job: PostWork
         displayName: 'Post Work - Wait 30s'
+        dependsOn: AcquireLock
         steps:
-          - checkout: none
           - script: |
-              echo "Stage 2 started: $(date)"
+              echo "Post work started: $(date)"
               sleep 30
-              echo "Stage 2 finished: $(date)"
-            displayName: 'Post Work (30s)'
+              echo "Post work finished: $(date)"
+            displayName: 'Step 2 (30s)'
