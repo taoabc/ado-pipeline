@@ -13,6 +13,8 @@ pr:
     include:
       - '*'
 
+lockBehavior: sequential
+
 pool:
   vmImage: 'ubuntu-latest'
 
